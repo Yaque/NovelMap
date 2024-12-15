@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>无限笔记</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            
+        }
+
+        #center {
+            width: 100vw;
+            height: 100vh;
+            margin: auto;
+            background-color: rgb(134, 168, 198);
+            overflow: hidden;
+        }
+
+        #paper-add {
+            float: left;
+            width: 20vw;
+            height: 96vh;
+            margin: 2vh 0.5vw 2vh 1vw;
+            background-color: antiquewhite;
+            border-radius: 1rem;
+        }
+
+        #paper-list {
+            float: left;
+            width: 77vw;
+            height: 96vh;
+            margin: 2vh 1vw 2vh 0.5vw;
+            background-color: antiquewhite;
+            border-radius: 1rem;
+            overflow-y: scroll;
+        }
+
+        .item-paper {
+            float: left;
+            width: 12rem;
+            height: 16rem;
+            background-color: aquamarine;
+            margin: 1rem;
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+            color: aliceblue;
+        }
+
+        .btn {
+            padding: 2rem 1rem;
+            background-color: aliceblue;
+            margin: 1rem;
+            border-radius: 0.5rem;
+            color: aqua;
+        }
+
+        .btn:hover {
+            background-color: rgb(129, 169, 204);
+        }
+
+        #text-add {
+            margin: 20vh 1vw 20vh 1vw;
+        }
+
+        #text-add input {
+            font-size: 2rem;
+            text-align: center;
+            border: 0;
+            width: 18vw;
+            height: 20vh;
+        }
+
+        #btn-add {
+            margin: 20vh 1vw 20vh 1vw;
+        }
+
+        #btn-add p {
+            font-size: 2rem;
+            text-align: center;
+            margin: 0;
+            width: 18vw;
+            background-color: aquamarine;
+            padding: 2vh 0 2vh 0;
+            color: white;
+            border-radius: 0.5rem;
+        }
+
+        #btn-add p:hover {
+            background-color: rgba(127, 255, 212, 0.611);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="center">
+        <div id="paper-add">
+            <div id="text-add"><input id="name" placeholder="请输入纸张名称"></div>
+            <div id="btn-add">
+                <p onclick="createPaper()">创建</p>
+            </div>
+        </div>
+        <div id="paper-list"></div>
+    </div>
+
+
+    <script type="text/javascript">
+        getPaper();
+
+        function createPaper() {
+            var name = document.getElementById('name');
+
+            // 创建一个 XMLHttpRequest 对象
+            var xhr = new XMLHttpRequest();
+
+            // 配置请求
+            xhr.open('POST', '../createPaper', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // 发送 JSON 数据
+            xhr.send(JSON.stringify({ "Name": name.value }));
+
+            // 监听请求的状态
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    name.value = "";
+                    getPaper();
+                }
+            };
+        }
+
+        function getPaper() {
+            // 创建一个 XMLHttpRequest 对象
+            var xhr = new XMLHttpRequest();
+
+            // 配置请求
+            xhr.open('POST', '../getPaper', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // 发送 JSON 数据
+            xhr.send(JSON.stringify({ "PW": "12345678" }));
+
+            // 监听请求的状态
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    showRes(data.Data);
+                    
+                }
+            };
+        }
+
+        function showRes(data) {
+            
+            var paperList = document.getElementById('paper-list');
+            console.log("1", paperList);
+            paperList.innerHTML = "";
+            if (data.Names == null) {
+                return;
+            }
+            console.log("2",paperList);
+            for (let i = 0; i < data.Names.length; i++) {
+                paperList.innerHTML += `
+                    <div class="item-paper">
+                        <div><h3>${data.Names[i].split('.')[0]}</h3></div>
+                        <div class='btn' onclick="openPaper('${data.Names[i]}')">打开</div>
+                        <div class='btn' onclick="deletePaper('${data.Names[i]}')">删除</div>
+                    </div>
+                `;
+            }
+        }
+
+        function deletePaper(name) {
+            // 创建一个 XMLHttpRequest 对象
+            var xhr = new XMLHttpRequest();
+
+            // 配置请求
+            xhr.open('POST', '../deletePaper', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // 发送 JSON 数据
+            xhr.send(JSON.stringify({ "Name": name }));
+
+            // 监听请求的状态
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    getPaper();
+                }
+            };
+        }
+
+        function openPaper(name) {
+            localStorage.papername = name;
+            location.href = "web.html";
+        }
+    </script>
+</body>
+
+</html>
