@@ -6,19 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>无线笔记</title>
     <style>
-        /* html {
+        html {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-        } */
+            -webkit-user-select: none;
+            /* Safari/Chrome */
+            -moz-user-select: none;
+            /* Firefox */
+            -ms-user-select: none;
+            /* IE10+ */
+            user-select: none;
+            touch-action: none;
+        }
+
         body {
             margin: 0;
             background-color: rgb(238, 211, 178);
+
         }
 
         #title {
+            width: 100%;
+            position: fixed;
+            top: 1rem;
             text-align: center;
             font-size: 30px;
             color: rgb(255, 255, 255);
@@ -26,26 +39,45 @@
 
         #center {
             overflow: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-select: none;
+            /* Safari/Chrome */
+            -moz-user-select: none;
+            /* Firefox */
+            -ms-user-select: none;
+            /* IE10+ */
+            user-select: none;
+            
         }
 
 
         #tools {
             float: left;
             width: 200px;
+            position: fixed;
+            left: 10px;
         }
 
         .btn {
             text-align: center;
             height: fit-content;
-            width: 160px;
+            width: 50px;
             background-color: aqua;
             margin: 10px;
-            padding: 20px 5px;
+            padding: 5px;
             border-radius: 0.5rem;
         }
 
         .btn:hover {
             background-color: rgb(17, 95, 95);
+        }
+
+        .btn:active {
+            background-color: rgb(214, 214, 214);
         }
 
 
@@ -65,21 +97,21 @@
 </head>
 
 <body>
-    <div>
-        <div id="title"></div>
-    </div>
     <div id="center">
+        <div id="title"></div>
         <div id="tools">
-            <div class="btn" onclick="home()">🏦返回</div>
+            <div class="btn" onclick="home()">🏦</div>
 
-            <div class="btn" onclick="unDo()">←</div>
-            <div class="btn" onclick="reDo()">→</div>
-            <div class="btn" onclick="clearPaper()">清空</div>
-            <div class="btn" onclick="movePaper()">移动</div>
+            <div class="btn" onclick="unDo()">⬅️</div>
+            <div class="btn" onclick="reDo()">➡️</div>
+            <div class="btn" onclick="clearPaper()">🏓</div>
+            <div class="btn" onclick="movePaper()">🖐️</div>
             <div class="btn">✏️<input type="range" min="0" max="50" value="2" onchange="onPenSize(this.value)"></div>
             <div class="btn">✏️<input type="color" onchange="onPenColor(this.value)"></div>
             <div class="btn">📚<input type="color" value="#7fffd4" onchange="onPaperColor(this.value)"></div>
-            <div class="btn">S<input type="range" min="1" max="10" value="1" onchange="onScaleT(this.value)"></div>
+            <div class="btn">🔍<input type="range" min="1" max="10" value="1" onchange="onScaleT(this.value)"></div>
+            <div class="btn" onclick="useClear()">◽</div>
+            <div class="btn" onclick="allScreen()">💻</div>
 
         </div>
         <div id="canvas-area">
@@ -94,6 +126,7 @@
 
 
     <script>
+
         function home() {
             location.href = "index.html";
         }
@@ -137,11 +170,47 @@
             ctx.strokeStyle = nowColor;
         }
 
+        let isUseClear = false;
+        let tempNowColor = nowColor;
+        function useClear() {
+            if (isUseClear) {
+                isUseClear = false;
+                nowColor = tempNowColor;
+                ctx.strokeStyle = nowColor;
+
+                nowLineWidth = tempNowLineWidth;
+                ctx.lineWidth = nowLineWidth;
+
+            } else {
+                isUseClear = true;
+                tempNowColor = nowColor;
+                nowColor = nowBGColor;
+                ctx.strokeStyle = nowColor;
+
+                tempNowLineWidth = nowLineWidth;
+                nowLineWidth = 20;
+                ctx.lineWidth = nowLineWidth;
+
+            }
+
+        }
+
+        let isAllScreen = false;
+        function allScreen() {
+            if (isAllScreen) {
+                isAllScreen = false;
+                document.exitFullscreen();
+            }else {
+                isAllScreen = true;
+                document.documentElement.requestFullscreen();
+            }
+        }
+
         function onPaperColor(color) {
             console.log(color);
             nowBGColor = color;
             canvas.style.backgroundColor = nowBGColor;
-            
+
         }
 
         let scaleT = 0.01;
@@ -154,8 +223,8 @@
         window.addEventListener('resize', resizeCanvas);
         //窗口尺寸改变响应（修改canvas大小）
         function resizeCanvas() {
-            canvas.width = document.documentElement.clientWidth - 250;
-            canvas.height = document.documentElement.clientHeight - 60;
+            canvas.width = document.documentElement.clientWidth;
+            canvas.height = document.documentElement.clientHeight;
             initPaper();
         };
 
@@ -183,7 +252,7 @@
 
         function onPenDown(e) {
             console.log("down", e, touchData);
-            if (touchData.e != null && Date.now() - touchData.t < 1000) {
+            if (touchData.e != null && Date.now() - touchData.t < 100) {
                 console.log("同时按下");
                 let a = touchData.e.offsetX - e.offsetX;
                 let b = touchData.e.offsetY - e.offsetY;
@@ -232,12 +301,13 @@
                 ctx.closePath();
                 isOnePen = false;
                 onePen.push({ X: e.offsetX, Y: e.offsetY });
-                allPenData.push({ OnePen: onePen, Scale: 1, Color: nowColor, LineWidth: nowLineWidth});
+                allPenData.push({ OnePen: onePen, Scale: 1, Color: nowColor, LineWidth: nowLineWidth });
                 onePen = [];
-                uploadAllPenData();
+
                 if (isDoubleDown) {
                     isDoubleDown = false;
                 }
+                // uploadAllPenData();
             }
 
 
@@ -271,19 +341,19 @@
 
                 let p = allPenData[i].OnePen;
                 if (scale <= 0) {
-                    allPenDataNew.push({ OnePen: p, Scale: allPenData[i].Scale, Color: allPenData[i].Color, LineWidth: allPenData[i].LineWidth});
+                    allPenDataNew.push({ OnePen: p, Scale: allPenData[i].Scale, Color: allPenData[i].Color, LineWidth: allPenData[i].LineWidth });
                     continue;
                 }
 
                 onePen = [];
 
-                
+
                 onePen.push({ X: p[0].X * scale - xscale, Y: p[0].Y * scale - yscale });
                 for (let j = 1; j < p.length; j++) {
                     onePen.push({ X: p[j].X * scale - xscale, Y: p[j].Y * scale - yscale });
                     draw(allPenData[i].Color, allPenData[i].LineWidth);
                 }
-                allPenDataNew.push({ OnePen: onePen, Scale: scale, Color: allPenData[i].Color, LineWidth: allPenData[i].LineWidth});
+                allPenDataNew.push({ OnePen: onePen, Scale: scale, Color: allPenData[i].Color, LineWidth: allPenData[i].LineWidth });
 
                 onePen = [];
             }

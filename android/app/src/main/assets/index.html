@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .loading,
+        .loading>div {
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .loading {
+            display: block;
+            font-size: 0;
+            color: #000;
+        }
+
+        .loading.la-dark {
+            color: #333;
+        }
+
+        .loading>div {
+            display: inline-block;
+            float: none;
+            background-color: currentColor;
+            border: 0 solid currentColor;
+        }
+
+        .loading {
+            width: 42px;
+            height: 32px;
+        }
+
+        .loading>div:nth-child(1) {
+            position: absolute;
+            bottom: 32%;
+            left: 18%;
+            width: 14px;
+            height: 14px;
+            border-radius: 100%;
+            transform-origin: center bottom;
+            animation: ball-climbing-dot-jump 0.6s ease-in-out infinite;
+        }
+
+        .loading>div:not(:nth-child(1)) {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 14px;
+            height: 2px;
+            border-radius: 0;
+            transform: translate(60%, 0);
+            animation: ball-climbing-dot-steps 1.8s linear infinite;
+        }
+
+        .loading>div:not(:nth-child(1)):nth-child(2) {
+            animation-delay: 0ms;
+        }
+
+        .loading>div:not(:nth-child(1)):nth-child(3) {
+            animation-delay: -600ms;
+        }
+
+        .loading>div:not(:nth-child(1)):nth-child(4) {
+            animation-delay: -1200ms;
+        }
+
+        @keyframes ball-climbing-dot-jump {
+            0% {
+                transform: scale(1, 0.7);
+            }
+
+            20% {
+                transform: scale(0.7, 1.2);
+            }
+
+            40% {
+                transform: scale(1, 1);
+            }
+
+            50% {
+                bottom: 125%;
+            }
+
+            46% {
+                transform: scale(1, 1);
+            }
+
+            80% {
+                transform: scale(0.7, 1.2);
+            }
+
+            90% {
+                transform: scale(0.7, 1.2);
+            }
+
+            100% {
+                transform: scale(1, 0.7);
+            }
+        }
+
+        @keyframes ball-climbing-dot-steps {
+            0% {
+                top: 0;
+                right: 0;
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 100%;
+                right: 100%;
+                opacity: 0;
+            }
+        }
+    </style>
+    <style>
+        #add-server {
+            width: 100%;
+            margin: 40vh auto 10vh auto;
+            text-align: center;
+        }
+        #tips-text {
+            margin: 20vh auto 10vh auto;
+        }
+        #tips-amin {
+            width: 42px;
+            margin: 5vh auto;
+        }
+
+        #option {
+            text-align: center;
+            
+        }
+        .u {
+            margin: 10vh auto;
+        }
+
+        #url-text {
+            text-align: center;
+            line-height: 2rem;
+            width: 80vw;
+        }
+
+        #url-btn {
+            padding: 1rem 4rem;
+            background-color: coral;
+            color: aliceblue;
+            border: none;
+            border-radius: 0.5rem;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="add-server">
+        <div id="tips-text">加载中</div>
+        <div id="tips-amin">
+            <div class="loading">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+
+        var url = getUrl();
+        console.log(undefined);
+        if (url != undefined) {
+            pingServer(url);
+        } else {
+            showAddServer();
+        }
+
+        function showAddServer() {
+            
+            var addServer = document.getElementById("add-server");
+            addServer.innerHTML = `
+            <div id="option">
+                <div class="u"><input id="url-text" type="input" placeholder="请输入 协议://地址:端口"></div>
+                <div class="u"><button id="url-btn" onclick="addServer()">添加</button></div>
+            </div>
+            `;
+            
+        }
+
+        function addServer() {
+            pingServer(document.getElementById('url-text').value);
+        }
+
+        function pingServer(url) {
+            // 创建一个 XMLHttpRequest 对象
+            var xhr = new XMLHttpRequest();
+
+            // 配置请求
+            xhr.open('POST', url + '/pingServer', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            // xhr.setRequestHeader('Authorization', 'Bearer YOUR_ACCESS_TOKEN');
+
+            xhr.timeout = 2000;
+            // 发送 JSON 数据
+            xhr.send(JSON.stringify({ "Name": "password" }));
+
+
+            // 监听请求的状态
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // var data = JSON.parse(xhr.responseText);
+                    setUrl(url);
+                    location.href = url + '/ui';
+                } else {
+                    showAddServer();
+                }
+            };
+            xhr.onerror = function () {
+                showAddServer();
+            };
+        }
+
+        function setUrl(url) {
+            localStorage.setItem('url', url);
+        }
+
+        function getUrl() {
+            return localStorage.getItem('url');
+        }
+    </script>
+</body>
+
+</html>

@@ -46,6 +46,35 @@ type AllPenData struct {
 	Data []OnePen
 }
 
+// func pingServer(w http.ResponseWriter, r *http.Request) {
+
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
+// 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
+// 	w.Header().Set("content-type", "application/json")             //返回数据格式是json
+
+// 	var requestData RequestData
+// 	err := json.NewDecoder(r.Body).Decode(&requestData)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+// 	fmt.Println(requestData.Name)
+
+// 	resData := ResponseData{Message: "OK", Status: 1}
+// 	resJsonData, _ := json.Marshal(resData)
+// 	w.Write(resJsonData)
+// }
+
+func pingServer(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
+	w.Header().Set("content-type", "application/json")             //返回数据格式是json
+
+	r.ParseForm()
+	fmt.Println("收到客户端请求: ", r.Form)
+}
+
 // 创建一张纸
 func createPaper(w http.ResponseWriter, r *http.Request) {
 	var requestData RequestData
@@ -145,6 +174,8 @@ func main() {
 
 	fs := http.FileServer(http.Dir("ui/"))
 	http.Handle("/ui/", http.StripPrefix("/ui/", fs))
+
+	http.HandleFunc("/pingServer", pingServer)
 
 	http.HandleFunc("/createPaper", createPaper)
 	http.HandleFunc("/getPaper", getPaper)
